@@ -1,0 +1,108 @@
+{
+  "name": "@PROJECT_NAME@/webapp",
+  "description": "@PROJECT_NAME@ Web / Rest API Projekt",
+  "license": "MIT",
+  "type": "project",
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "config": {
+    "optimize-autoloader": true,
+    "apcu-autoloader": true,
+    "discard-changes": true,
+    "preferred-install": "dist",
+    "sort-packages": true
+  },
+  "require": {
+    "php": "^7.4",
+    "ext-apcu": "*",
+    "ext-intl": "*",
+    "ext-json": "*",
+    "ext-mbstring": "*",
+    "ext-mysqli": "*",
+    "ext-pdo": "*",
+    "ext-pdo_mysql": "*",
+    "ajgl/composer-symlinker": "^0.2.1",
+    "swagger-api/swagger-ui": "^3.31",
+    "symfony/dotenv": "^5.1",
+    "waglpz/webapp": "^v1.0",
+    "waglpz/webapp-routing": "^v1.0",
+    "waglpz/webapp-view-helpers": "^v1.0"
+  },
+  "require-dev": {
+    "doctrine/coding-standard": "^9.0",
+    "ifsnop/mysqldump-php": "^2.9",
+    "phpstan/phpstan": "^0.12",
+    "phpstan/phpstan-deprecation-rules": "^0.12",
+    "phpstan/phpstan-doctrine": "^0.12",
+    "phpstan/phpstan-phpunit": "^0.12",
+    "phpstan/phpstan-strict-rules": "^0.12",
+    "phpstan/phpstan-symfony": "^0.12",
+    "phpstan/phpstan-webmozart-assert": "^0.12",
+    "phpunit/phpunit": "~9.5",
+    "roave/security-advisories": "dev-master",
+    "squizlabs/php_codesniffer": "^3.6",
+    "symfony/var-dumper": "^5.3"
+  },
+  "conflict": {
+  },
+  "autoload": {
+    "psr-4": {
+      "@PROJECT_NS@\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "@PROJECT_NS@\\Tests\\": "tests/",
+      "Waglpz\\Webapp\\Tests\\": "vendor/waglpz/webapp/tests/"
+    }
+  },
+  "replace": {
+  },
+  "scripts": {
+    "waglpz:cli": "cli",
+    "waglpz:cs-check": "phpcs -p --parallel=12",
+    "waglpz:cs-fix": "phpcbf -p --parallel=12",
+    "waglpz:pre-test": "php bin/recreate-test-db.php",
+    "waglpz:db:migrate": "@waglpz:cli db:migrations migrate",
+    "waglpz:test:normal": "phpunit --colors=always tests",
+    "waglpz:analyse": [
+      "phpstan analyse --configuration=phpstan.neon bin/ config/ public/ src/ tests/ --level max"
+    ],
+    "waglpz:test:parallel": "find tests/ -name '*Test.php' | ./vendor/liuggio/fastest/fastest 'vendor/phpunit/phpunit/phpunit --testdox {};'",
+    "waglpz:check:ci": [
+      "@waglpz:cli db:migrations migrate",
+      "@waglpz:pre-test",
+      "@waglpz:cs-check",
+      "@waglpz:analyse",
+      "@waglpz:test:parallel"
+    ],
+    "waglpz:check:normal": [
+      "@waglpz:cs-check",
+      "@waglpz:analyse",
+      "@waglpz:test:normal"
+    ],
+    "waglpz:check:parallel": [
+      "@waglpz:cs-check",
+      "@waglpz:analyse",
+      "@waglpz:test:parallel"
+    ],
+    "publish-assets": [
+      "Ajgl\\Composer\\ScriptSymlinker::createSymlinks"
+    ],
+    "post-install-cmd": [
+      "@publish-assets",
+      "cp -n vendor/waglpz/webapp/config/cli.php config/"
+    ],
+    "post-update-cmd": [
+      "@publish-assets",
+      "cp -n vendor/waglpz/webapp/config/cli.php config/"
+    ]
+  },
+  "extra": {
+    "ajgl-symlinks": {
+      "swagger-api/swagger-ui": {
+        "dist": "public/bundles/swagger-api"
+      }
+    }
+  }
+}

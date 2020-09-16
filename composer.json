@@ -1,0 +1,22 @@
+{
+  "name": "waglpz/webapp-template",
+  "type": "project",
+  "description": "Abstract project",
+  "authors": [
+    {
+      "name": "Alexander Hutorezki",
+      "email": "olekhy@gmail.com"
+    }
+  ],
+  "minimum-stability": "dev",
+  "require": {
+  },
+  "license": [
+    "MIT"
+  ],
+  "scripts": {
+    "post-create-project-cmd": [
+      "sh bin/post-create-project-cmd.sh"
+    ]
+  }
+}

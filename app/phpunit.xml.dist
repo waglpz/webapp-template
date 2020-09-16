@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- https://phpunit.de/manual/current/en/appendixes.configuration.html -->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
+         testdox="true"
+         colors="true"
+         cacheResult="false"
+         bootstrap="vendor/autoload.php"
+         verbose="true">
+  <coverage processUncoveredFiles="true">
+    <include>
+      <directory suffix=".php">./src</directory>
+    </include>
+    <report>
+      <html outputDirectory=".build-output/coverage"/>
+      <text outputFile="php://stdout" showOnlySummary="true"/>
+    </report>
+  </coverage>
+  <testsuites>
+    <testsuite name="all">
+      <directory>tests</directory>
+    </testsuite>
+  </testsuites>
+  <php>
+    <const name="APP_ENV" value="test"/>
+    <const name="PROJECT_CONFIG_DIRECTORY" value="config"/>
+  </php>
+  <logging>
+    <junit outputFile=".build-output/junit.xml"/>
+  </logging>
+</phpunit>

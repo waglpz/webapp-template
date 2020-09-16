@@ -1,0 +1,20 @@
+.env
+/.build-output
+/phpunit.xml
+
+# swagger ui
+/public/bundles/
+
+# contains variable data relating to app eg chache, logs
+/var/*
+!/var/log
+/var/log/*
+!/var/log/.gitkeep
+
+# composer dependencies
+/vendor/
+
+!**/.gitignore
+!**/.gitkeep
+
+

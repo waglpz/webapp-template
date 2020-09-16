@@ -1,0 +1,80 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "@PROJECT_NAME@ REST API Documentation",
+    "description": "",
+    "version": "0.1.0"
+  },
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer using JWT token authentication"
+      }
+    },
+    "responses": {
+      "Internal Server Error": {
+        "description": "When an unknown server error occurs."
+      },
+      "Unauthorized": {
+        "description": "JWT token is missing or invalid."
+      },
+      "Forbidden": {
+        "description": "User is authenticated but he is not allowed to perform the operation."
+      },
+      "Not Found": {
+        "description": "When resource cannot be found at the moment."
+      }
+    }
+  },
+  "paths": {
+    "/api/error404": {
+      "get": {
+        "responses": {
+          "404": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Get 404 Error from the unknown API endpoint"
+          }
+        },
+        "tags": [
+          " API"
+        ]
+      }
+    },
+    "/api/ping": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "time": {
+                      "description": "The server time as a timestamp",
+                      "type": "integer",
+                      "example": 1524788100.000000
+                    },
+                    "apiVersion": {
+                      "description": "The latest API version",
+                      "type": "string",
+                      "example": "0.1.0"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Get information about the API"
+          }
+        },
+        "tags": [
+          " API"
+        ]
+      }
+    }
+  }
+}

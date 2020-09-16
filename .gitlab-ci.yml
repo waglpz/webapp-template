@@ -1,0 +1,31 @@
+stages:
+  - check
+
+variables:
+  APPUID: 0
+  APPUGID: 0
+  DBPORT: 3306
+  APPPORT: 8080      
+  DOCKER_HOST: tcp://docker:2375/
+  DOCKER_DRIVER: overlay2
+
+# Official docker compose image.
+image:
+  name: docker/compose:latest
+
+services:
+  - docker:dind
+
+before_script:
+  - docker version
+  - docker-compose version
+
+check:
+  stage: check
+  script:
+    - docker-compose build --force-rm --no-cache --pull
+    - docker-compose up -d
+    - sh -c "sleep 20"
+    - docker-compose exec -T app composer install
+    - docker-compose exec -T app composer waglpz:check:ci
+    - docker-compose down

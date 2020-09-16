@@ -1,0 +1,57 @@
+version: '3.5'
+
+services:
+  app:
+    container_name: @PROJECT_NAME@-app
+    build:
+      context: app/.docker
+      args:
+        - APPUID=${APPUID}
+        - APPUGID=${APPUGID}
+    depends_on:
+      - db
+    ports:
+      - ${APPPORT}:80
+    volumes:
+      - ./app:/app
+      - ./app/.docker/php/php-ini-overrides.ini:/usr/local/etc/php/conf.d/99-overrides.ini
+    networks:
+      @PROJECT_NAME@:
+        ipv4_address: 10.120.@S_NET@.2
+    environment:
+      APP_ENV: "dev"
+#      APP_ENV: "prod"
+      XDEBUG_CONFIG: "remote_host=10.120.@S_NET@.2"
+      PHP_IDE_CONFIG: "serverName=@PROJECT_NAME@-docker"
+    extra_hosts:
+      - "@PROJECT_NAME@-db:10.120.@S_NET@.3"
+  db:
+    ports:
+      - ${DBPORT}:3306
+    container_name: @PROJECT_NAME@-db
+    volumes:
+      - .docker/db/config-file.cnf:/etc/mysql/conf.d/config-file.cnf
+      - db-data:/var/lib/mysql
+    build:
+      context: .docker/db
+    networks:
+      @PROJECT_NAME@:
+        ipv4_address: 10.120.@S_NET@.3
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+
+volumes:
+  db-data: {} # docker will create volume under /var/lib/docker/volumes
+
+networks:
+  @PROJECT_NAME@:
+    name: @PROJECT_NAME@
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.120.@S_NET@.0/24
+
+# Entries should be placed in file /etc/hosts
+# please add to /etc/hosts file
+# 10.120.@S_NET@.2 @PROJECT_NAME@-app
+# 10.120.@S_NET@.3 @PROJECT_NAME@-db
