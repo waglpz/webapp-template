@@ -1,0 +1,9 @@
+/.build-output
+/phpunit.xml
+# swagger ui
+/public/bundles/
+!/var/log/.gitkeep
+/var/log/*
+/var/*
+/vendor/
+
