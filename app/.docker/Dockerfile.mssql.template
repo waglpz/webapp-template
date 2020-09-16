@@ -1,0 +1,47 @@
+FROM olekhy/webapp
+
+RUN apt-get update;                 \
+    apt-get install                 \
+            -y                      \
+            --no-install-recommends \
+        gnupg2
+
+RUN curl https://packages.microsoft.com/keys/microsoft.asc > tt && apt-key add tt; \
+    curl https://packages.microsoft.com/config/debian/10/prod.list > /etc/apt/sources.list.d/mssql-release.list
+
+ENV ACCEPT_EULA=Y
+
+# core Debian packages which includes of create PHP environment
+RUN apt-get update;                 \
+    apt-get install                 \
+            -y                      \
+            --no-install-recommends \
+        freetds-dev                 \
+        libgssapi-krb5-2            \
+        msodbcsql17                 \
+        mssql-tools                 \
+        unixodbc-dev                \
+    ;                               \
+    rm -rf /var/lib/apt/lists/*;    \
+    rm -rf /var/cache/apt;          \
+    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false
+
+RUN ln -s /usr/lib/x86_64-linux-gnu/libsybdb.so /usr/lib/
+
+## core PHP extensions
+RUN docker-php-ext-configure pdo_dblib --with-libdir=/lib/x86_64-linux-gnu \
+    ;                                            \
+    docker-php-ext-install                       \
+        pdo_mysql                                \
+        sockets                                  \
+    ;                                            \
+    pecl install sqlsrv;                         \
+    pecl install pdo_sqlsrv;                     \
+    docker-php-ext-install                       \
+        pdo_dblib                                \
+    ;                                            \
+    docker-php-ext-enable                        \
+        sqlsrv                                   \
+        pdo_sqlsrv
+
+
