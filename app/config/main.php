@@ -11,8 +11,12 @@ use function Waglpz\Webapp\container;
 return [
     'apiVersion'          => '0.1.0',
     'logErrorsDir'        => __DIR__ . '/../var/log',
-    'anonymizeLog'       => [
-        'SERVER' => ['DB_PASSWD'],
+    'anonymizeLog' => [
+        '_SERVER' => [
+            'DB_PASSWD' => '*****',
+            'DB_USER' => '*****',
+        ],
+        '_POST' => [/* set here necessary keys wich should be anonymized in log*/],
     ],
     'db'                  => include 'db.php',
     'router'              => include 'router.php',
