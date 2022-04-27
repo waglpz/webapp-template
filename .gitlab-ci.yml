@@ -11,21 +11,21 @@ variables:
 
 # Official docker compose image.
 image:
-  name: docker/compose:latest
+  name: docker:dind
 
 services:
   - docker:dind
 
 before_script:
   - docker version
-  - docker-compose version
+  - docker compose version
 
 check:
   stage: check
   script:
-    - docker-compose build --force-rm --no-cache --pull
-    - docker-compose up -d
+    - docker compose build --force-rm --no-cache --pull
+    - docker compose up -d
     - sh -c "sleep 20"
-    - docker-compose exec -T app composer install
-    - docker-compose exec -T app composer waglpz:check:ci
-    - docker-compose down
+    - docker compose exec -T app composer install
+    - docker compose exec -T app composer waglpz:check:ci
+    - docker compose down

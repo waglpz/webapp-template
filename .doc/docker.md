@@ -34,45 +34,44 @@ make a change in .env for eg `APPPORT=8081`. So will Apache from Docker not conf
 
 ### Compiling all defined images
 ```bash
-docker-compose build --parallel --force-rm --no-cache --pull
+docker compose build --parallel --force-rm --no-cache --pull
 ```
 
 ### Start the environment
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ### Display docker stack environment state
 ```bash
-docker-compose ps
+docker compose ps
 ```
 
 ### Expose logs from running docker stack 
 ```bash
-docker-compose logs --tail 10 -f
+docker compose logs --tail 10 -f
 ```
 
 ## Working with the environment
 
-Any commands can executed from within the container using shell, or by using docker-compose exec.
+Any commands can executed from within the container using shell, or by using docker compose exec.
 To get a shell prompt inside of the APP container:
 ```bash
-docker-compose exec --user $(id -u):$(id -g) app bash
+docker compose exec --user $(id -u):$(id -g) app bash
 ```
 
 Example command to run from container shell or host:
 ```bash
 php -v
 # or
-docker-compose exec --user $(id -u):$(id -g) app php -v
+docker compose exec --user $(id -u):$(id -g) app php -v
 ```
 
 ## Accessing the environment components
 
 There are few containers running in the current setup: APP (Apache, PHP), MariaDB.
 The docker compose environment creates a network interface using the `10.120.5.0/24` subnet.
-See the end of `docker-compose.yml` for the entry in your local `hosts` 
+See the end of `docker compose.yml` for the entry in your local `hosts` 
 file to access the containers by the domainname.
 
 - [Web interface](http://@PROJECT_NAME@-app)
-

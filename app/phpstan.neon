@@ -1,13 +1,7 @@
-includes:
-    - vendor/phpstan/phpstan-phpunit/extension.neon
-    - vendor/phpstan/phpstan-strict-rules/rules.neon
-    - vendor/phpstan/phpstan-webmozart-assert/extension.neon
-    - vendor/phpstan/phpstan-symfony/extension.neon
 parameters:
     ignoreErrors:
-         - '#Constant APP_ENV not found.#'
+        - '#Constant APP_ENV not found.#'
 #         - '#Variable method call#'
-#         - '#Short ternary operator is not allowed. Use null coalesce operator#'
     polluteScopeWithLoopInitialAssignments: true
     parallel:
         # to disable parallel uncomment next line
