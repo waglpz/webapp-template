@@ -2,20 +2,48 @@
 /** @var string $content */
 /** @var string $webseitenTitle */
 /** @var string $seitenTitle */
-?>
-<!doctype html>
-<html lang="en">
+$webBase = \Waglpz\Webapp\webBase();
+$version = \Waglpz\Webapp\version();
+?><!doctype html>
+<html lang="de">
 <head>
     <meta charset="utf-8">
+    <link rel="shortcut icon" href="<?=$webBase?>/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title><?=$webseitenTitle?></title>
+    <link rel="stylesheet" href="<?=$webBase?>/css/bootstrap.min.css?<?=$version?>">
+
+<!--    <link href="--><?//=$webBase?><!--/css/jquery.autocompleter.css?--><?//=$version?><!--" rel="stylesheet">-->
+    <link href="<?=$webBase?>/css/custom.css?<?=$version?>" rel="stylesheet">
+    <link href="<?=$webBase?>/css/to-top.css?<?=$version?>" rel="stylesheet">
+    <script src="<?=$webBase?>/javascript/app.js?<?=$version?>"></script>
 </head>
 <body>
+<?//=viewHelpers()->navigation()->topNavigation()?>
+<?//=viewHelpers()->modalDialog()->documentUpload()?>
+<div class="container-fluid vh-95">
+    <div class="row">
 
-<?=$seitenTitle?>
-<br/>
-<?=$content?>
+<?//=viewHelpers()->navigation()->sideNavigation()?>
 
+        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4" style="padding-top: 1.15rem;">
+            <h1 class="h5 text-black-50"><?=$seitenTitle?></h1>
+            <?=$content?>
+        </main>
+    </div>
+</div>
+
+<a class="top-link hide" href="" id="js-top">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6">
+        <path d="M12 6H0l6-6z"/>
+    </svg>
+    <span class="screen-reader-text">nach oben</span>
+</a>
+<?//=viewHelpers()->modalDialog()?>
 </body>
+<script src="<?=$webBase?>/javascript/fontawesome.js?<?=$version?>" crossorigin="anonymous"></script>
+<script src="<?=$webBase?>/javascript/jquery-3.6.0.min.js?<?=$version?>"></script>
+<script src="<?=$webBase?>/javascript/bootstrap.bundle.min.js?<?=$version?>"></script>
+<!--<script src="--><?//=$webBase?><!--/javascript/jquery.autocompleter.min.js?--><?//=$version?><!--"></script>-->
+<!--<script src="--><?//=$webBase?><!--/javascript/Sortable.min.js?--><?//=$version?><!--""></script>-->
 </html>
-

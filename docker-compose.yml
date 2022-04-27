@@ -14,6 +14,7 @@ services:
       - ${APPPORT}:80
     volumes:
       - ./app:/app
+      - .git:/app/.git
       - ./app/.docker/php/php-ini-overrides.ini:/usr/local/etc/php/conf.d/99-overrides.ini
     networks:
       @PROJECT_NAME@:
@@ -39,7 +40,15 @@ services:
         ipv4_address: 10.120.@S_NET@.3
     environment:
       MYSQL_ROOT_PASSWORD: root
-
+#  mail:
+#    image: schickling/mailcatcher
+#    container_name: @PROJECT_NAME@-mail
+#    networks:
+#      @PROJECT_NAME@:
+#        ipv4_address: 10.120.@S_NET@.4
+#    environment:
+#      - VIRTUAL_HOST=@PROJECT_NAME@-mail
+#      - VIRTUAL_PORT=1080
 volumes:
   db-data: {} # docker will create volume under /var/lib/docker/volumes
 
@@ -55,3 +64,4 @@ networks:
 # please add to /etc/hosts file
 # 10.120.@S_NET@.2 @PROJECT_NAME@-app
 # 10.120.@S_NET@.3 @PROJECT_NAME@-db
+# 10.120.@S_NET@.3 @PROJECT_NAME@-mail

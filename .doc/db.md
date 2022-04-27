@@ -40,9 +40,17 @@ docker volume rm $(basename $PWD)_db-data
 docker-compose build --parallel --force-rm --no-cache --pull db
 ```
 
-### start docker stack
+### Init Docker DB container 
+first run not detached, so you can check that all scripts from init/ directory was applied. 
+check the output for errors if any than you need to fix them and rebuild image also.  
+
+```bash
+docker-compose up db
+```
+after recreation and first running of DB container please stop them via <Ctrl + C> 
+
+### start docker stack in detached mode
 
 ```bash
 docker-compose up -d
 ```
-

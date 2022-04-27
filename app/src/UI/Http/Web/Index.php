@@ -9,9 +9,9 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 use Slim\Views\PhpRenderer;
-use Waglpz\Webapp\BaseController;
+use Waglpz\Webapp\WebController;
 
-class Index extends BaseController
+class Index extends WebController
 {
     private ExtendedPdoInterface $pdo;
     private LoggerInterface $logger;

@@ -9,8 +9,6 @@ use FastRoute\Dispatcher;
 use Interop\Http\EmitterInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Views\PhpRenderer;
-use Waglpz\View\Helpers\Factory\Factory as ViewHelpersFactory;
-use Waglpz\Webapp\Security\Firewalled;
 use Waglpz\Webapp\UI\Http\Web\SwaggerUI;
 
 use function FastRoute\simpleDispatcher;
@@ -21,10 +19,12 @@ return [
         'substitutions' => [
             Dispatcher::class                => [
                 Dice::INSTANCE => static function (): Dispatcher {
-                    return simpleDispatcher(config('router'));
+                    $routerCollector = config('router');
+                    \assert(\is_callable($routerCollector));
+
+                    return simpleDispatcher($routerCollector);
                 },
             ],
-            Firewalled::class                => null,
             PhpRenderer::class               => '$DefaultViewRenderer',
             EmitterInterface::class          => Emitter::class,
         ],
@@ -39,15 +39,13 @@ return [
         'shared'          => true,
         'instanceOf'      => PhpRenderer::class,
         'constructParams' => [
+            /** @phpstan-ignore-next-line */
             config('view')['templates'],
+            /** @phpstan-ignore-next-line */
             config('view')['attributes'],
+            /** @phpstan-ignore-next-line */
             config('view')['layout'],
         ],
-    ],
-    ViewHelpersFactory::class      => [
-        'shared'          => true,
-        'instanceOf'      => ViewHelpersFactory::class,
-        'constructParams' => [config('viewHelpers')],
     ],
     SwaggerUI::class                 => [
         'shared'          => true,

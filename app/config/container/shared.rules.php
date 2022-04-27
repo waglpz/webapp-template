@@ -25,23 +25,37 @@ return [
         'instanceOf'      => ExceptionHandler::class,
         'constructParams' => [config('logErrorsDir'), config('anonymizeLog')],
     ],
-    //-> Web App
     '$DefaultPDO'                => [
         'shared'          => true,
         'instanceOf'      => ExtendedPdo::class,
         'constructParams' => [
+            /** @phpstan-ignore-next-line */
             config('db')['dsn'],
+            /** @phpstan-ignore-next-line */
             config('db')['username'],
+            /** @phpstan-ignore-next-line */
             config('db')['password'],
+            /** @phpstan-ignore-next-line */
             config('db')['options'] ?? null,
+            /** @phpstan-ignore-next-line */
             config('db')['queries'] ?? null,
+            /** @phpstan-ignore-next-line */
             config('db')['profiler'] ?? null,
         ],
     ],
-    //<- Web App
     '$DefaultLogger'             => [
         'shared'     => true,
         'instanceOf' => LoggerFactory::class,
-        'call'       => [['create', ['default', config('logger')['default']], Dice::CHAIN_CALL]],
+        'call'       => [
+            [
+                'create',
+                [
+                    'default',
+                    /** @phpstan-ignore-next-line */
+                    config('logger')['default'],
+                ],
+                Dice::CHAIN_CALL,
+            ],
+        ],
     ],
 ];
