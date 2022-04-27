@@ -1,37 +1,70 @@
 #!/usr/bin/env bash
 
 # Ansi color code variables
-YELLOW="\e[1;33m"
-RED="\e[0;91m"
-BLUE="\e[0;94m"
-GREEN="\e[0;92m"
-WHITE="\e[0;97m"
-RESET="\e[0m"
+Y="\e[1;33m"
+R="\e[0;91m"
+B="\e[0;94m"
+G="\e[0;92m"
+W="\e[0;97m"
+RST="\e[0m"
+CANCEL_PROMT="    press any key to continue or <CTRL+C> to cancel"
 
-NAME=$(echo $(basename "$PWD") | tr '[:upper:]' '[:lower:]');
-NS=$(php -r "echo str_replace('-', '', ucwords(preg_replace('/[\.\+_\-\s]/', '-', '"$NAME"'), '-'));")
-echo
-echo -e ${RED}Project initialization...
-echo -e ${BLUE}Project name: ${YELLOW}${NAME}
-echo -e ${BLUE}Namespace PHP classes: ${YELLOW}${NS}${RESET}
-echo -e ${BLUE}Docker Network Subnet: ${YELLOW}${NEXT_S_NET}
+clear
+echo ""
+echo New project initialization...
+
+BASE_NAME=$(basename "$PWD")
+NS=$(php ./bin/php.inc ns "${BASE_NAME}")
+EX=$?
+
+if [[ ${EX} -ne 0 ]]
+then
+  echo  -e "${R}Error occurs at parsing PHP Namespace string from given: ${BASE_NAME}. Exit status: ${EX}.${RST}";
+  exit 1;
+fi
+
+if [[ -z "${NS}" ]]
+then
+  echo -e "${R}Error occurs at parsing PHP Namespace string from given: ${BASE_NAME}.${RST}" ;
+  exit 1;
+fi
+
+NAME=$(php ./bin/php.inc slug "${BASE_NAME}")
+EX=$?
+
+if [[ ${NAME} -ne 0 ]]
+then
+  echo  -e "${R}Error occurs at parsing project name string from given: ${BASE_NAME}. Exit status: ${EX}.${RST}";
+  exit 1;
+fi
+
+
+if [[ -z "${NAME}" ]]
+then
+  echo -e "${R}Error occurs at parsing project name from given: ${BASE_NAME}.${RST}";
+  exit 1;
+fi
+
+echo ""
+echo -e Project name will be: "${G}${NAME}${RST}".
+read -p "${CANCEL_PROMT}"
+
+echo -e PHP Namespace: "${G}${NS}${RST}".
+read -p "${CANCEL_PROMT}"
+
+if [[ -z "${NEXT_S_NET}" ]]
+then
+  read -p "Please set IP Address for docker compose network: " NEXT_S_NET
+fi
 
 sed -ri -e 's!@S_NET@!'"$NEXT_S_NET"'!g' ./docker-compose.yml
 sed -ri -e 's!@S_NET@!'"$NEXT_S_NET"'!g' .doc/development.md
+
 find . -type f -exec sed -ri -e 's!@PROJECT_NS@!'"$NS"'!g' "{}" \;
 find . -type f -exec sed -ri -e 's!@PROJECT_NAME@!'"$NAME"'!g' "{}" \;
-rm -rv bin/post-create-project-cmd.sh composer.json
 
-echo
-echo -e ${RED}Next steps you need to do are:
-echo -e "${WHITE}  "cd $(basename "$PWD")
-echo -e ${BLUE}then run
-echo -e "${WHITE}  "bash bin/install.sh
-echo
-echo -e ${GREEN}to complete this installation put next line
-echo -e ${WHITE}
-tail -n2 ${PWD}/docker-compose.yml
-echo
-echo -e ${GREEN}into ${YELLOW}/etc/hosts${RESET}
-echo -e "${GREEN}pls don't forget to uncomment them ;)"
-echo
+rm -rv $0 bin/php.inc composer.json
+echo -e "${G}Setup complete.${RST}"
+echo -e "Continue with installation"
+read -p "${CANCEL_PROMT}"
+echo -e "Please run command: ${Y}cd ${BASE_NAME} && bash bin/install.sh ${RST}"

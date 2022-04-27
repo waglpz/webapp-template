@@ -19,10 +19,10 @@ please add next in /etc/hosts
 ###### Log in PHP container as a normal user
 
 ```bash
-docker-compose exec --user $(id -u):$(id -g) app bash
+docker compose exec --user $(id -u):$(id -g) app bash
 ```
 
 ###### Log in PHP container as root user
 ```bash
-docker-compose exec --user 0:0 app bash
+docker compose exec --user 0:0 app bash
 ```
