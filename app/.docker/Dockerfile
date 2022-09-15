@@ -1,4 +1,4 @@
-FROM olekhy/webapp:php7.4-apache-d10-paralel
+FROM waglpz/vwd-base:7.4
 
 ARG APPUID=0
 ARG APPUGID=0
