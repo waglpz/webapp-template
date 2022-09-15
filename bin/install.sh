@@ -57,8 +57,8 @@ $(id -g)    \
 "$APPPORT"  \
 > .env
 
-docker-compose build --parallel --force-rm --no-cache --pull
+docker compose build --parallel --force-rm --no-cache --pull
 echo -e "${GREEN}Finish build images${RESET}"
 docker images | grep "$(basename $PWD)"
-docker-compose up -d
-docker-compose exec -u $(id -u):$(id -g) app composer install
+docker compose up -d
+docker compose exec -u $(id -u):$(id -g) app composer install
