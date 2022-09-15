@@ -10,7 +10,11 @@
     "apcu-autoloader": true,
     "discard-changes": true,
     "preferred-install": "dist",
-    "sort-packages": true
+    "sort-packages": true,
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "phpstan/extension-installer": true
+    }
   },
   "require": {
     "php": "^7.4",
