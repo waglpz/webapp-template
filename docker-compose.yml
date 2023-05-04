@@ -38,6 +38,21 @@ services:
         ipv4_address: 10.120.@S_NET@.3
     environment:
       MYSQL_ROOT_PASSWORD: root
+  web:
+    container_name: @PROJECT_NAME@-web
+    build:
+      context: web/.docker
+      target: dev #see in Dockerfile target
+    volumes:
+      - ./web:/web
+    stdin_open: true
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    ports:
+      - "3000:3000"
+    networks:
+      @PROJECT_NAME@:
+        ipv4_address: 10.200.@S_NET@.4
 #  mail:
 #    image: schickling/mailcatcher
 #    container_name: @PROJECT_NAME@-mail
@@ -65,5 +80,8 @@ networks:
 # 10.120.@S_NET@.2 @PROJECT_NAME@-app.com
 
 # 10.120.@S_NET@.3 @PROJECT_NAME@-db
+
+# 10.120.@S_NET@.4 @PROJECT_NAME@-web
+# 10.120.@S_NET@.4 @PROJECT_NAME@-web.com
 
 # 10.120.@S_NET@.5 @PROJECT_NAME@-mail
