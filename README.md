@@ -42,7 +42,7 @@ waglpz/webapp-template PROJECT_NAME
 
 ### Verwendete Tech-Stack
 
-PHP ab 7.4
+PHP ab 8.2
 
 MariaDb ab 10.3
 
