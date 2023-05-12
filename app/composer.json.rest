@@ -35,6 +35,7 @@
     "ext-pdo": "*",
     "ext-pdo_mysql": "*",
     "ajgl/composer-symlinker": "^0.3.1",
+    "waglpz/cli": "^v2.0",
     "waglpz/config": "^2.0",
     "waglpz/di-container": "^2.0",
     "waglpz/webapp-restapi": "^2.0"
@@ -86,6 +87,8 @@
     "waglpz:test:ci": "phpunit --colors=always --no-coverage --no-logging --do-not-cache-result --order-by random",
     "post-install-cmd": [
       "@publish-assets",
+      "cp -nR vendor/waglpz/cli/config/* config/",
+      "cp -nR vendor/waglpz/cli/migrations ./",
       "cp -nR vendor/waglpz/webapp-restapi/public ./",
       "cp -nR vendor/waglpz/webapp-restapi/templates ./",
       "cp -nR vendor/waglpz/webapp-restapi/swagger.json ./",
@@ -100,6 +103,8 @@
     ],
     "post-update-cmd": [
       "@publish-assets",
+      "cp -nR vendor/waglpz/cli/config/* config/",
+      "cp -nR vendor/waglpz/cli/migrations ./",
       "cp -nR vendor/waglpz/webapp-restapi/public ./",
       "cp -nR vendor/waglpz/webapp-restapi/templates ./",
       "cp -nR vendor/waglpz/webapp-restapi/swagger.json ./",
