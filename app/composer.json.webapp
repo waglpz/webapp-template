@@ -84,24 +84,24 @@
     "waglpz:test:coverage": "phpunit --testdox --colors=always",
     "waglpz:test:ci": "phpunit --colors=always --no-coverage --no-logging --do-not-cache-result --order-by random",
     "post-install-cmd": [
+      "cp -nR vendor/waglpz/di-container/config/* config/",
+      "cp -nR vendor/waglpz/config/config/* config/",
       "cp -nR vendor/waglpz/webapp-view-helpers/config/container/* config/container",
       "cp -nR vendor/waglpz/webapp-routing/config/* config/",
       "cp -nR vendor/waglpz/webapp/public ./",
       "cp -nR vendor/waglpz/webapp/templates ./",
       "cp -nR vendor/waglpz/webapp/config/* config/",
-      "cp -nR vendor/waglpz/webapp/migrations ./",
-      "cp -nR vendor/waglpz/config/config/* config/",
-      "cp -nR vendor/waglpz/di-container/config/* config/"
+      "cp -nR vendor/waglpz/webapp/migrations ./"
     ],
     "post-update-cmd": [
+      "cp -nR vendor/waglpz/di-container/config/* config/",
+      "cp -nR vendor/waglpz/config/config/* config/",
       "cp -nR vendor/waglpz/webapp-view-helpers/config/container/* config/container",
       "cp -nR vendor/waglpz/webapp-routing/config/* config/",
       "cp -nR vendor/waglpz/webapp/public ./",
       "cp -nR vendor/waglpz/webapp/templates ./",
       "cp -nR vendor/waglpz/webapp/config/* config/",
-      "cp -nR vendor/waglpz/webapp/migrations ./",
-      "cp -nR vendor/waglpz/config/config/* config/",
-      "cp -nR vendor/waglpz/di-container/config/* config/"
+      "cp -nR vendor/waglpz/webapp/migrations ./"
     ]
   }
 }
