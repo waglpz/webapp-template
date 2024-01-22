@@ -16,19 +16,29 @@ CANCEL_PROMT="    press any key to continue or <CTRL+C> to cancel"
 
 clear
 
-if  [[ $(docker ps -q) != "" ]]; then
+if  [[ $(docker ps -qa) != "" ]]; then
     echo
     echo
     echo -e "All docker services will be down...${RST}"
     read -p "${CANCEL_PROMT}"
     echo
-    docker ps -aq | xargs docker stop
-    docker ps -aq | xargs docker rm -f
+    docker ps -aq | xargs docker stop | xargs docker rm
     docker network prune -f
     echo -e "${G}done${RST}"
 fi 
 
 echo
+
+if command -v git &> /dev/null
+then
+    echo "Git is installed. Go next"
+else
+    echo "Git isnot installed. Try to install ..."
+    sudo apt-get update
+    sudo apt-get install git -y
+fi
+
+git init
 
 DBPORT=
 while [[ "${DBPORT}" = "" ]]; do
