@@ -1,5 +1,5 @@
 ### STAGE Basis ###
-FROM node:16.17.1 as base
+FROM node:lts AS base
 
 RUN mkdir /web
 WORKDIR /web
@@ -7,25 +7,28 @@ WORKDIR /web
 ENV PATH /web/node_modules/.bin:$PATH
 
 ### STAGE Development ###
-FROM base as dev
+FROM base AS dev
 
 EXPOSE 3000
 CMD ["sleep", "100000"]
 
-FROM base as build
-COPY package.json /web/package.json
+FROM base AS build
 
-RUN npm install
+COPY web/package.json web/package-lock.json ./
 
-COPY . /web
+RUN npm ci
+
+COPY web ./
 
 RUN npm run build
 
 ### NGINX ###
-FROM nginx:stable-alpine
+### command to create image
+### docker build --target=prod -f web/.docker/Dockerfile  . -t authz-provider-web
+FROM nginx AS prod
 
-COPY --from=build /web/build /usr/share/nginx/html
+COPY web/build /usr/share/nginx/html/
 
-EXPOSE 80
+EXPOSE 80 443
 
 CMD ["nginx", "-g", "daemon off;"]

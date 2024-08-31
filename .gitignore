@@ -3,3 +3,6 @@
 .notifier
 *.log
 /.env
+/secret.json
+selfsigned.crt
+selfsigned.key

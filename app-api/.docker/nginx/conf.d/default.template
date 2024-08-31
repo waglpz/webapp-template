@@ -1,0 +1,53 @@
+server {
+    listen 80 default_server;
+    server_name ${APP_NAME}-app.com *.${APP_NAME}-app.com;
+    return 302 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl default_server;
+    http2 on;
+    server_name ${APP_NAME}-app.com *.${APP_NAME}-app.com;
+    resolver 127.0.0.1;
+    autoindex off;
+    server_tokens off;
+
+    gzip_static on;
+    tcp_nopush on;
+    tcp_nodelay on;
+
+    ssl_certificate /etc/ssl/selfsigned/selfsigned-crt;
+    ssl_certificate_key /etc/ssl/selfsigned/selfsigned-key;
+
+    root /app/public;
+
+    if ($scheme != "https") {
+        rewrite ^ https://$host$uri permanent;
+    }
+
+    # PHP-FPM Configuration
+    location ~ \.php$ {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        include fastcgi_params;
+        fastcgi_pass  app:9000;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+    }
+
+    index index.php;
+
+    location ~ /\.ht {
+        deny all;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+        if ($request_method = 'OPTIONS') {
+            add_header 'Access-Control-Allow-Origin' '*';
+            add_header 'Access-Control-Allow-Methods' '*';
+            add_header 'Access-Control-Allow-Headers' '*';
+        }
+    }
+}
