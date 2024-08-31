@@ -22,6 +22,7 @@
     </testsuite>
   </testsuites>
   <php>
+    <server name="LOG_DIR" value="/var/log"/>
     <const name="APP_ENV" value="test"/>
     <const name="PROJECT_CONFIG_DIRECTORY" value="config"/>
   </php>

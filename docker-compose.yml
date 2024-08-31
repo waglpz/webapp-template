@@ -1,33 +1,63 @@
 services:
-  app:
-    container_name: @PROJECT_NAME@-app
-    build:
-      context: app/.docker
-      args:
-        - APPUID=${APPUID}
-        - APPUGID=${APPUGID}
-    depends_on:
-      - db
-    ports:
-      - ${APPPORT}:80
+  composer:
+    container_name: ${APP_NAME}-app-composer
+    image: composer:latest
+    restart: always
     volumes:
+      - composer:/tmp
+    command: /bin/bash -c "/bin/cp /usr/bin/composer /tmp && /bin/cp /usr/bin/composer /tmp/c && chmod -R 777 /tmp && sleep 100000"
+  app-api:
+    container_name: ${APP_NAME}-app-api
+    image: nginx
+    restart: always
+    depends_on:
+      - app
+    volumes:
+      - ./app-api/.docker/nginx/conf.d/default.template:/etc/nginx/conf.d/default.template
+      - ./selfsigned.crt:/etc/ssl/selfsigned/selfsigned-crt
+      - ./selfsigned.key:/etc/ssl/selfsigned/selfsigned-key
       - ./app:/app
-      - .git:/app/.git
-      - ./app/.docker/php/php-ini-overrides.ini:/usr/local/etc/php/conf.d/99-overrides.ini
+    environment:
+      APP_NAME: ${APP_NAME}
     networks:
       @PROJECT_NAME@:
         ipv4_address: 10.120.@S_NET@.2
-    environment:
-      APP_ENV: "dev"
-#      APP_ENV: "prod"
-      XDEBUG_CONFIG: "remote_host=10.120.@S_NET@.2"
-      PHP_IDE_CONFIG: "serverName=@PROJECT_NAME@-docker"
+    command: /bin/bash -c "envsubst '$${APP_NAME}' < /etc/nginx/conf.d/default.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
     extra_hosts:
-      - "@PROJECT_NAME@-db:10.120.@S_NET@.3"
+      - "app:10.120.@S_NET@.3"
+  app:
+    container_name: ${APP_NAME}-app
+    image: waglpz/vwd-base:8.3-fpm
+    restart: always
+    depends_on:
+      - db
+      - composer
+    volumes:
+      - composer:/composer:rw
+      - ./app:/app
+      - .git:/app/.git
+      - ./app/.docker/php/php-ini-overrides.ini:/usr/local/etc/php/conf.d/99-overrides.ini
+    environment:
+      APP_NAME: ${APP_NAME}
+      APP_ENV: "dev"
+      #      APP_ENV: "prod"
+      COMPOSER_PROCESS_TIMEOUT: 7200
+      COMPOSER_ALLOW_SUPERUSER: "1"
+      COMPOSER_AUTH: '{ "gitlab-token":{ "gitlab.com": "$ACCESS_TOKEN_PAPI_CLIENT" } }'
+      #      COMPOSER_VERSION=2.7.2
+      PATH: "$PATH:/composer"
+      COMPOSER_HOME: "/composer"
+      XDEBUG_CONFIG: "remote_host=10.120.@S_NET@.3"
+      PHP_IDE_CONFIG: "serverName=@PROJECT_NAME@-docker"
+    networks:
+      @PROJECT_NAME@:
+         ipv4_address: 10.120.@S_NET@.3
+    extra_hosts:
+      - "@PROJECT_NAME@-db:10.120.@S_NET@.4"
   db:
+    container_name: ${APP_NAME}-db
     ports:
       - ${DBPORT}:3306
-    container_name: @PROJECT_NAME@-db
     volumes:
       - .docker/db/config-file.cnf:/etc/mysql/conf.d/config-file.cnf
       - db-data:/var/lib/mysql
@@ -35,34 +65,35 @@ services:
       context: .docker/db
     networks:
       @PROJECT_NAME@:
-        ipv4_address: 10.120.@S_NET@.3
+        ipv4_address: 10.120.@S_NET@.4
     environment:
       MYSQL_ROOT_PASSWORD: root
   web:
-    container_name: @PROJECT_NAME@-web
+    container_name: ${APP_NAME}-web
     build:
       context: web/.docker
       target: dev #see in Dockerfile target
     volumes:
       - ./web:/web
+      - ./selfsigned.crt:/selfsigned.crt
+      - ./selfsigned.key:/selfsigned.key
     stdin_open: true
     environment:
       - CHOKIDAR_USEPOLLING=true
-    ports:
-      - "3000:3000"
     networks:
       @PROJECT_NAME@:
-        ipv4_address: 10.120.@S_NET@.4
+        ipv4_address: 10.120.@S_NET@.5
 #  mail:
 #    image: schickling/mailcatcher
-#    container_name: @PROJECT_NAME@-mail
+#    container_name: ${APP_NAME}-mail
 #    networks:
 #      @PROJECT_NAME@:
-#        ipv4_address: 10.120.@S_NET@.5
+#        ipv4_address: 10.120.@S_NET@.6
 #    environment:
-#      - VIRTUAL_HOST=@PROJECT_NAME@-mail
+#      - VIRTUAL_HOST=${APP_NAME}-mail
 #      - VIRTUAL_PORT=1080
 volumes:
+  composer: { } # docker will create volume under /var/lib/docker/volumes
   db-data: {} # docker will create volume under /var/lib/docker/volumes
 
 networks:
@@ -76,12 +107,10 @@ networks:
 # Entries should be placed in file /etc/hosts
 # please add to /etc/hosts file
 
-# 10.120.@S_NET@.2 @PROJECT_NAME@-app
 # 10.120.@S_NET@.2 @PROJECT_NAME@-app.com
 
-# 10.120.@S_NET@.3 @PROJECT_NAME@-db
+# 10.120.@S_NET@.4 @PROJECT_NAME@-db
 
-# 10.120.@S_NET@.4 @PROJECT_NAME@-web
-# 10.120.@S_NET@.4 @PROJECT_NAME@-web.com
+# 10.120.@S_NET@.5 @PROJECT_NAME@-web.com
 
-# 10.120.@S_NET@.5 @PROJECT_NAME@-mail
+# 10.120.@S_NET@.6 @PROJECT_NAME@-mail
