@@ -16,26 +16,29 @@ CANCEL_PROMPT="    press any key to continue or <Ctrl+C> to cancel"
 
 clear
 
-NAME=@PROJECT_NAME@
+NAME="@PROJECT_NAME@"
 
 echo "Install and setting up certificate HTTPS"
 
-sudo apt update && sudo apt install libnss3-tools
+if ! command -v mkcert &> /dev/null; then
+    echo -e "${R}mkcert could not be found. Installing...${RST}"
+    sudo apt update && sudo apt install -y libnss3-tools
+    wget https://dl.filippo.io/mkcert/latest?for=linux/amd64 -O mkcert
+    sudo mv mkcert /usr/local/bin/
+    sudo chmod +x /usr/local/bin/mkcert
+fi
 
-wget https://dl.filippo.io/mkcert/latest?for=linux/amd64 -O mkcert
-sudo mv mkcert /usr/local/bin/
-sudo chmod +x /usr/local/bin/mkcert
 mkcert -install
 
-mkcert -cert-file selfsigned.crt -key-file selfsigned.key ${NAME}-app.com ${NAME}-web.com
+mkcert -cert-file selfsigned.crt -key-file selfsigned.key "${NAME}-app.com" "${NAME}-web.com"
 
 echo "HTTPS enabled."
-read -p "    press any key to continue..."
+read -p "${CANCEL_PROMPT}"
 
 git init
 echo -e "${G}Git repository initiated via git init command.${RST}"
 
-if [[ "$(/usr/bin/docker ps -q)" != "" ]]; then
+if [[ -n "$(docker ps -q)" ]]; then
     echo
     echo
     echo -e "All docker containers will be shut down...${RST}"
@@ -52,55 +55,31 @@ echo
 DBPORT=""
 while [[ -z "$DBPORT" ]]; do
   read -p "Please enter the server port for the Database (db): " -r DBPORT
-  if [[ "$DBPORT" -lt 1025 ]]; then
+  if ! [[ "$DBPORT" =~ ^[0-9]+$ ]] || [[ "$DBPORT" -lt 1025 ]]; then
     DBPORT=""
-    echo -e "${R}The port cannot be less than:${RST} 1025"
+    echo -e "${R}The port must be a number and cannot be less than:${RST} 1025"
   fi
 done
 echo -e "${G}Database (db) port:${RST} ${DBPORT}"
 echo
 
-#APPPORT=""
-#while [[ -z "$APPPORT" ]]; do
-#  read -p "Please enter the server port for PHP backend (app): " -r APPPORT
-#  if [[ "$APPPORT" -lt 1025 ]]; then
-#    APPPORT=""
-#    echo -e "${R}The port cannot be less than:${RST} 1025"
-#  elif [[ "$APPPORT" == "$DBPORT" ]]; then
-#    APPPORT=""
-#    echo -e "${R}The backend server port cannot be the same as the database server port.${RST}"
-#  fi
-#done
-#echo -e "${G}PHP backend (app) port:${RST} ${APPPORT}"
-#echo
-
-#WEBPORT=""
-#while [[ -z "$WEBPORT" ]]; do
-#  read -p "Please enter the server port for the frontend (web): " -r WEBPORT
-#  if [[ "$WEBPORT" -lt 1025 ]]; then
-#    WEBPORT=""
-#    echo -e "${R}The port cannot be less than:${RST} 1025"
-#  elif [[ "$WEBPORT" == "$DBPORT" ]]; then
-#    WEBPORT=""
-#    echo -e "${R}The port cannot be the same as the database server port.${RST}"
-#  elif [[ "$WEBPORT" == "$APPPORT" ]]; then
-#    WEBPORT=""
-#    echo -e "${R}The port cannot be the same as the backend app server port.${RST}"
-#  fi
-#done
-#echo -e "${G}Frontend (web) port:${RST} ${WEBPORT}"
-
 echo "Creating Docker Compose environment file (.env) in project root directory"
-read -p "    press any key to continue..."
+read -p "${CANCEL_PROMPT}"
 
 cat << EOF > .env
 APP_NAME=${NAME}
 APPUID=$(id -u)
 APPUGID=$(id -g)
 DBPORT=${DBPORT}
-WEBAPP_ID=
+WEBAPP_ID=$(uuidgen -r)
+
+# google console
 GOOGLECLIENTID=
+
+# gitlab access token
 ACCESS_TOKEN_PAPI_CLIENT=
+
+# auth-z provider url
 AUTH_TOKEN_AWARE_URL=
 EOF
 
@@ -134,9 +113,24 @@ echo -e "${G}Web app type:${RST} ${APP_TYPE}"
 echo
 
 echo "Enabling the composer.json in the backend app stack: ${APP_TYPE}"
-read -p "    press any key to continue..."
+read -p "${CANCEL_PROMPT}"
 cp "app/composer.json.$APP_TYPE" app/composer.json
 rm -f app/composer.json.*
+
+if [[ $APP_TYPE == "rest" || $APP_TYPE == "webapp.full" ]]; then
+  cat << EOF > app/var/public.pem
+-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnHjZO1TutlhOuf2Yr2az
+EMKiraFPrWrxHPCWx2w8JKBPDD0/Y/0Y/vDi26xbnPavi7qfi9mplAwhqRW331Yw
++2q/EOT9jj+s2Mgc+3vX4ojGiPOkRG5tVIOo+pni1col4V+HZGHC2yC5htYWRHvV
+ddU7KdyhiC6xTQopUZW3bIFtAmSXceh8R0cpcddtfbNMIb21UvW9HKlk4V09Y0Hu
+wyGXagPjiedZP3HSzCmIylxLteQhfGn9vJfs0o53D87KlvwLDXhYpX9k1FPk1PH3
+kHaN3RbeUI1fECfkn2/sOUhdwZ5mSgt78w5EoWgxOTqyEDOdJjW9N6lc2quGn6L0
+hwIDAQAB
+-----END PUBLIC KEY-----
+EOF
+  echo "JWT_PUBLIC_RSA_KEY_FILE=/app/var/public.pem" >> app/.env.dist
+fi
 
 echo -e "${G}Setup backend application type done${RST}"
 echo
@@ -147,7 +141,8 @@ docker compose exec -u "$(id -u)":"$(id -g)" app composer install
 echo -e "${G}Packages installation done${RST}"
 echo
 
-read -p "Setup server names with IP mapping in /etc/hosts"
+echo "Setup server names with IP mapping in /etc/hosts"
+read -p "Press any key to continue"
 
 sudo su -c 'echo "## '"${NAME}"'" >> /etc/hosts && cat docker-compose.yml | grep "/etc/hosts" -A 15 | grep -v "/etc/hosts" | awk "NF" | sed -e "s/# //" >> /etc/hosts'
 
@@ -175,5 +170,9 @@ cat << EOF > README.md
 EOF
 
 git add . && git commit -m "chore: Webapp code basis initial commit" > /dev/null
+
+if [[ $APP_TYPE == "rest" ]]; then
+  echo "All final steps described in: file://$(realpath .doc/development/final-setup-webapp-restapi.md)"
+fi
 
 echo -e "${G_BG}${G}All is done. Finito:)${RST}"

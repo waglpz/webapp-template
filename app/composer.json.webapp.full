@@ -45,10 +45,10 @@
     "waglpz/di-container": "^2.0",
     "waglpz/google-sso": "^2.0",
     "waglpz/webapp": "^2.0",
-    "waglpz/webapp-middleware": "^2.0",
+    "waglpz/webapp-middleware": "^2.2",
     "waglpz/webapp-restapi": "^2.0",
     "waglpz/webapp-view-helpers": "^2.0",
-    "waglpz/webapp-security": "^2.0",
+    "waglpz/webapp-security": "^2.1",
     "webmozart/assert": "^1.11"
   },
   "require-dev": {
@@ -109,6 +109,8 @@
       "cp -nR vendor/waglpz/webapp-restapi/templates ./",
       "cp -nR vendor/waglpz/webapp-restapi/swagger.json ./",
       "cp -nR vendor/waglpz/webapp-restapi/config/* config/",
+      "cp -nR vendor/waglpz/webapp-security/config/* config/",
+      "cp -nR vendor/waglpz/webapp-middleware/config/* config/",
       "cp -nR vendor/waglpz/google-sso/config/* config/",
       "cp -nR vendor/waglpz/google-sso/templates/* templates/",
       "cp -nR vendor/waglpz/google-sso/src/App.php ./src"
@@ -127,6 +129,8 @@
       "cp -nR vendor/waglpz/webapp-restapi/templates ./",
       "cp -nR vendor/waglpz/webapp-restapi/swagger.json ./",
       "cp -nR vendor/waglpz/webapp-restapi/config/* config/",
+      "cp -nR vendor/waglpz/webapp-security/config/* config/",
+      "cp -nR vendor/waglpz/webapp-middleware/config/* config/",
       "cp -nR vendor/waglpz/google-sso/config/* config/",
       "cp -nR vendor/waglpz/google-sso/templates/* templates/",
       "cp -nR vendor/waglpz/google-sso/src/App.php ./src"

@@ -41,9 +41,9 @@
     "waglpz/cli": "^v2.0",
     "waglpz/config": "^2.0",
     "waglpz/di-container": "^2.0",
-    "waglpz/webapp-middleware": "^2.0",
+    "waglpz/webapp-middleware": "^2.2",
     "waglpz/webapp-restapi": "^2.0",
-    "waglpz/webapp-security": "^2.0"
+    "waglpz/webapp-security": "^2.1"
   },
   "require-dev": {
     "doctrine/coding-standard": "^11.1",
@@ -102,7 +102,9 @@
       "cp -nR vendor/waglpz/webapp-restapi/public ./",
       "cp -nR vendor/waglpz/webapp-restapi/templates ./",
       "cp -nR vendor/waglpz/webapp-restapi/swagger.json ./",
-      "cp -nR vendor/waglpz/webapp-restapi/config/* config/"
+      "cp -nR vendor/waglpz/webapp-restapi/config/* config/",
+      "cp -nR vendor/waglpz/webapp-security/config/* config/",
+      "cp -nR vendor/waglpz/webapp-middleware/config/* config/"
     ],
     "post-update-cmd": [
       "cp -nR vendor/waglpz/di-container/config/* config/",
@@ -117,7 +119,9 @@
       "cp -nR vendor/waglpz/webapp-restapi/public ./",
       "cp -nR vendor/waglpz/webapp-restapi/templates ./",
       "cp -nR vendor/waglpz/webapp-restapi/swagger.json ./",
-      "cp -nR vendor/waglpz/webapp-restapi/config/* config/"
+      "cp -nR vendor/waglpz/webapp-restapi/config/* config/",
+      "cp -nR vendor/waglpz/webapp-security/config/* config/",
+      "cp -nR vendor/waglpz/webapp-middleware/config/* config/"
     ]
   },
   "extra": {
