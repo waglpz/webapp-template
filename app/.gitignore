@@ -3,7 +3,7 @@
 
 # swagger ui
 /public/bundles/
-/public/veolia.webapp.manifest.json*
+/public/*.webapp.manifest.json*
 
 # contains variable data relating to app eg chache, logs
 /var/*
@@ -13,6 +13,8 @@
 
 # composer dependencies
 /vendor/
+
+!**/public.pem
 
 !**/.gitignore
 !**/.gitkeep

@@ -1,0 +1,9 @@
+**/*.md
+**/*.log
+**/tests
+**/.docker
+**/phpcs.xml
+**/phpstan.neon
+**/phpunit.xml.dist
+**/.git
+**/.idea

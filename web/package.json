@@ -1,7 +1,7 @@
 {
-  "name": "@PROJECT_NAME@-web",
-  "description": "@PROJECT_NAME@ Web Frontend",
-  "version": "1.1.0",
+  "name": "reference-project-web",
+  "description": "Reference Project Web Frontend",
+  "version": "1.0.3",
   "private": true,
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
@@ -39,6 +39,7 @@
     "caniuse-lite": "^1.0.30001579",
     "date-and-time": "^3.1.1",
     "date-fns": "^2.13.0",
+    "date-fns-tz": "^2.0.1",
     "history": "^5.3.0",
     "mui-datatables": "^4.3.0",
     "notistack": "^3.0.1",

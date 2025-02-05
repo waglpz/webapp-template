@@ -1,13 +1,37 @@
 stages:
   - check
+  - build
+  - deploy
+  - rollback
 
 variables:
+  APP_NAME: @PROJECT_NAME@
   APPUID: 0
   APPUGID: 0
   DBPORT: 3306
-  APPPORT: 8080      
+  APPPORT: 8080
   DOCKER_HOST: tcp://docker:2375/
   DOCKER_DRIVER: overlay2
+  DEPLOY_SERVER: https://stage.vwd-gmbh.de/
+
+  IMAGE_TAG: "$CI_COMMIT_SHA"  # Tag basiert auf dem Commit-Hash
+
+  DB_IMAGE: "$CI_REGISTRY_IMAGE/db"
+  DB_LATEST_TAG: "$DB_IMAGE:latest"
+
+  FRONTEND_IMAGE: "$CI_REGISTRY_IMAGE/frontend"
+  FRONTEND_LATEST_TAG: "$FRONTEND_IMAGE:latest"  # Tag für die neueste Version of web part for test
+
+  FRONTEND_PROD_IMAGE: "$CI_REGISTRY_IMAGE/frontend-prod"
+  FRONTEND_PROD_LATEST_TAG: "$FRONTEND_PROD_IMAGE:latest"  # Tag für die neueste Version of web part for production
+
+  BACKEND_IMAGE: "$CI_REGISTRY_IMAGE/backend"
+  BACKEND_LATEST_TAG: "$BACKEND_IMAGE:latest"  # Tag für die neueste Version of app part
+
+  FRONTEND_PROD_BUILD_ARG__REACT_APP_WEBAPP_ID: "eb184928-11b2-41a5-b64d-d7d24df1a616"
+  FRONTEND_PROD_BUILD_ARG__REACT_APP_API_URL: "https://ci.it-vwd.de/api"
+  FRONTEND_PROD_BUILD_ARG__REACT_APP_NAME: "Reference Project Webapp (Test)"
+  FRONTEND_PROD_BUILD_ARG__REACT_APP_GOOGLECLIENTID: "GOOGLECLIENTID-xxx-abc-123-uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu"
 
 # Official docker compose image.
 image:
@@ -19,13 +43,144 @@ services:
 before_script:
   - docker version
   - docker compose version
+  - echo "Logging in to GitLab Container Registry..."
+  - echo $CI_JOB_TOKEN | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY_IMAGE
 
 check:
   stage: check
   script:
     - docker compose build --force-rm --no-cache --pull
     - docker compose up -d
-    - sh -c "sleep 20"
+    - sleep 20
     - docker compose exec -T app composer install
     - docker compose exec -T app composer waglpz:check:ci
     - docker compose down
+
+build-and-push-backend-image:
+  stage: build
+  script:
+    - echo "Building TEST/PROD backend Docker code as image..."
+    - docker build --no-cache --target=code -f app/.docker/Dockerfile  . -t $BACKEND_IMAGE:$IMAGE_TAG
+    - docker images
+    # Zuerst das letzte 'latest' Image als stable taggen (falls vorhanden)
+    - |
+    - if
+    - docker pull $BACKEND_LATEST_TAG; then
+    - echo "Tagging the previous 'latest' as 'stable'..."
+    - docker tag $BACKEND_LATEST_TAG $BACKEND_IMAGE:stable  # Setze den 'stable' Tag auf das alte 'latest'
+    - docker push $BACKEND_IMAGE:stable  # Push das 'stable' Tag (die vorherige stabile Version)
+    - else
+    - echo "No previous 'latest' image found, skipping stable tag update."
+    - fi
+    - docker push $BACKEND_IMAGE:$IMAGE_TAG  # Push das Image mit dem Commit hash-Tag
+    - docker tag $BACKEND_IMAGE:$IMAGE_TAG $BACKEND_LATEST_TAG  # Setze auch den Tag 'latest'
+    - docker push $BACKEND_LATEST_TAG  # Push das Image mit dem 'latest' Tag
+  only:
+    - chore/deployment-12
+
+build-and-push-frontend-image:
+  stage: build
+  script:
+    - echo "Building TEST Docker frontend image..."
+    - docker build --no-cache --target=prod -f web/.docker/Dockerfile . -t $FRONTEND_IMAGE:$IMAGE_TAG
+    - docker images
+    # Zuerst das letzte 'latest' Image als stable taggen (falls vorhanden)
+    - |
+    - if
+    - docker pull $FRONTEND_LATEST_TAG; then
+    - echo "Tagging the previous 'latest' as 'stable'..."
+    - docker tag $FRONTEND_LATEST_TAG $FRONTEND_IMAGE:stable  # Setze den 'stable' Tag auf das alte 'latest'
+    - docker push $FRONTEND_IMAGE:stable  # Push das 'stable' Tag (die vorherige stabile Version)
+    - else
+    - echo "No previous 'latest' image found, skipping stable tag update."
+    - fi
+    - docker push $FRONTEND_IMAGE:$IMAGE_TAG  # Push das Image mit dem Commit-Tag
+    - docker tag $FRONTEND_IMAGE:$IMAGE_TAG $FRONTEND_LATEST_TAG  # Setze auch den Tag 'latest'
+    - docker push $FRONTEND_LATEST_TAG  # Push das Image mit dem 'latest' Tag
+  only:
+    - chore/deployment-12
+
+build-and-push-frontend-prod-image:
+  stage: build
+  script:
+    - echo "Building PROD Docker frontend image..."
+    - docker build --no-cache
+        --target=prod
+        --build-arg REACT_APP_WEBAPP_ID="${FRONTEND_PROD_BUILD_ARG__REACT_APP_WEBAPP_ID}"
+        --build-arg REACT_APP_API_URL="${FRONTEND_PROD_BUILD_ARG__REACT_APP_API_URL}"
+        --build-arg REACT_APP_NAME="${FRONTEND_PROD_BUILD_ARG__REACT_APP_NAME}"
+        --build-arg REACT_APP_GOOGLECLIENTID="${FRONTEND_PROD_BUILD_ARG__REACT_APP_GOOGLECLIENTID}"
+        -f web/.docker/Dockerfile
+        -t $FRONTEND_PROD_IMAGE:$IMAGE_TAG
+        .
+    - docker images
+    #Zuerst das letzte 'latest' Image als stable taggen (falls vorhanden)
+    - |
+    - if
+    - docker pull $FRONTEND_PROD_LATEST_TAG; then
+    - echo "Tagging the previous 'latest' as 'stable'..."
+    - docker tag $FRONTEND_PROD_LATEST_TAG $FRONTEND_PROD_IMAGE:stable  # Setze den 'stable' Tag auf das alte 'latest'
+    - docker push $FRONTEND_PROD_IMAGE:stable  # Push das 'stable' Tag (die vorherige stabile Version)
+    - else
+    - echo "No previous 'latest' image found, skipping stable tag update."
+    - fi
+    - docker push $FRONTEND_PROD_IMAGE:$IMAGE_TAG  # Push das Image mit dem Commit-Tag
+    - docker tag $FRONTEND_PROD_IMAGE:$IMAGE_TAG $FRONTEND_PROD_LATEST_TAG  # Setze auch den Tag 'latest'
+    - docker push $FRONTEND_PROD_LATEST_TAG  # Push das Image mit dem 'latest' Tag
+  only:
+    - chore/deployment-12
+
+build-and-push-db-image:
+  stage: build
+  script:
+    - echo "Building TEST database Docker image..."
+    - docker build --no-cache -f .docker/db/Dockerfile  .docker/db -t $DB_IMAGE:$IMAGE_TAG
+    - docker images
+    # Zuerst das letzte 'latest' Image als stable taggen (falls vorhanden)
+    - |
+    - if
+    - docker pull $DB_LATEST_TAG; then
+    - echo "Tagging the previous 'latest' as 'stable'..."
+    - docker tag $DB_LATEST_TAG $DB_IMAGE:stable  # Setze den 'stable' Tag auf das alte 'latest'
+    - docker push $DB_IMAGE:stable  # Push das 'stable' Tag (die vorherige stabile Version)
+    - else
+    - echo "No previous 'latest' image found, skipping stable tag update."
+    - fi
+    - docker push $DB_IMAGE:$IMAGE_TAG  # Push das Image mit dem Commit-Tag
+    - docker tag $DB_IMAGE:$IMAGE_TAG $DB_LATEST_TAG  # Setze auch den Tag 'latest'
+    - docker push $DB_LATEST_TAG  # Push das Image mit dem 'latest' Tag
+  only:
+    - chore/deployment-12
+
+deploy:
+  stage: deploy
+  image: docker:latest
+  script:
+    - apk add --no-cache curl
+    - echo "Send Webhook HTTP-Request to deploy server"
+    - |
+      response=$(curl -s -w "%{http_code}" -o response_data -X POST $DEPLOY_SERVER -d "project=$CI_PROJECT_NAME&namespace=$CI_PROJECT_NAMESPACE&project_dir=$CI_PROJECT_DIR")
+      status_code=${response: -3}  # Die letzten drei Zeichen sind der Statuscode
+      echo "Response status code: $status_code"
+      cat response_data
+      if [ "$status_code" -ne 200 ]; then
+      echo "An error occurred while deployment."
+      exit 1  # Beende den Job mit einem Fehlercode
+      fi
+  only:
+    - chore/deployment-12
+
+# Rollback-Stage, falls das Feature mit 'latest' fehlerhaft ist
+rollback_to_latest_stable:
+  stage: rollback
+  script:
+    - echo "Not yet implemented..."
+#    - docker pull $FRONTEND_LATEST_TAG  # Ziehe das letzte stabile Image
+#    - docker tag $FRONTEND_LATEST_TAG $FRONTEND_LATEST_TAG  # Setze den Tag 'latest' auf das stabile Image
+#    - docker pull $FRONTEND_PROD_LATEST_TAG  # Ziehe das neueste 'latest' Image
+#    - docker tag $FRONTEND_LATEST_TAG $WEB_DEFECT_TAG  # Setze den 'stable' Tag
+#    - docker push $FRONTEND_LATEST_TAG  # Push das stabile Image als 'latest' Tag
+#    - docker push $WEB_DEFECT_TAG  # Push das stabile Image als 'latest' Tag
+  only:
+    - chore/deployment-12
+  when: manual

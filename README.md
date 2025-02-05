@@ -40,14 +40,13 @@ waglpz/webapp-template PROJECT_NAME
 
 * [wie erstelle ich eine Route](.doc/development/route-erstellen.md)
 
-### Verwendete Tech-Stack
+### Verwendeter Technologie-Stack
 
-PHP ab 8.2
+- **Docker version 27.2.0, build 3ab4256**
+- **Docker Compose version v2.29.2**
+- **PHP 8.3.4 (cli) (built: Apr  8 2024 22:31:17) (NTS) (in Docker)**
+- **10.3.22-MariaDB-1:10.3.22+maria~bionic**
 
-MariaDb ab 10.3
-
-Swagger 3.0
- 
 ### Technischer verantwortlicher 
 
 Max Mustermann <a@b.cd>

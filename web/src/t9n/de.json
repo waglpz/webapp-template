@@ -1,0 +1,9 @@
+{
+  "noData": "Liste ist leer. Geben Sie eine Suchanfrage ein oder ändern Sie die bestehende.",
+  "pagination": {
+    "next": "Nächste Seite",
+    "previous": "Vorherige Seite",
+    "rowsPerPage": "Zeilen pro Seite:",
+    "displayRows": "von"
+  }
+}

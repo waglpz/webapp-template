@@ -1,4 +1,7 @@
 services:
+  # ┌──────────────────────────────────────────────────────────────┐
+  # │ PHP-Composer as service, available in app service            │
+  # └──────────────────────────────────────────────────────────────┘
   composer:
     container_name: ${APP_NAME}-app-composer
     image: composer:latest
@@ -6,6 +9,9 @@ services:
     volumes:
       - composer:/tmp
     command: /bin/bash -c "/bin/cp /usr/bin/composer /tmp && /bin/cp /usr/bin/composer /tmp/c && chmod -R 777 /tmp && sleep 100000"
+  # ┌──────────────────────────────────────────────────────────────┐
+  # │ Nginx as entry point & proxy to app service                  │
+  # └──────────────────────────────────────────────────────────────┘
   app-api:
     container_name: ${APP_NAME}-app-api
     image: nginx
@@ -13,7 +19,7 @@ services:
     depends_on:
       - app
     volumes:
-      - ./app-api/.docker/nginx/conf.d/default.template:/etc/nginx/conf.d/default.template
+      - ./app-api/.docker/nginx/conf.d/default.template.conf:/etc/nginx/conf.d/default.template
       - ./selfsigned.crt:/etc/ssl/selfsigned/selfsigned-crt
       - ./selfsigned.key:/etc/ssl/selfsigned/selfsigned-key
       - ./app:/app
@@ -25,9 +31,14 @@ services:
     command: /bin/bash -c "envsubst '$${APP_NAME}' < /etc/nginx/conf.d/default.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
     extra_hosts:
       - "app:10.120.@S_NET@.3"
+  # ┌──────────────────────────────────────────────────────────────┐
+  # │ PHP-Backend app service                                      │
+  # └──────────────────────────────────────────────────────────────┘
   app:
     container_name: ${APP_NAME}-app
-    image: waglpz/vwd-base:8.3-fpm
+    build:
+      context: ./app/.docker
+      target: base
     restart: always
     depends_on:
       - db
@@ -44,7 +55,6 @@ services:
       COMPOSER_PROCESS_TIMEOUT: 7200
       COMPOSER_ALLOW_SUPERUSER: "1"
       COMPOSER_AUTH: '{ "gitlab-token":{ "gitlab.com": "$ACCESS_TOKEN_PAPI_CLIENT" } }'
-      #      COMPOSER_VERSION=2.7.2
       PATH: "$PATH:/composer"
       COMPOSER_HOME: "/composer"
       XDEBUG_CONFIG: "remote_host=10.120.@S_NET@.3"
@@ -54,6 +64,9 @@ services:
          ipv4_address: 10.120.@S_NET@.3
     extra_hosts:
       - "@PROJECT_NAME@-db:10.120.@S_NET@.4"
+  # ┌──────────────────────────────────────────────────────────────┐
+  # │ MariaDB service db                                           │
+  # └──────────────────────────────────────────────────────────────┘
   db:
     container_name: ${APP_NAME}-db
     ports:
@@ -68,6 +81,9 @@ services:
         ipv4_address: 10.120.@S_NET@.4
     environment:
       MYSQL_ROOT_PASSWORD: root
+  # ┌──────────────────────────────────────────────────────────────┐
+  # │ Frontend React service web                                   │
+  # └──────────────────────────────────────────────────────────────┘
   web:
     container_name: ${APP_NAME}-web
     build:
@@ -80,9 +96,16 @@ services:
     stdin_open: true
     environment:
       - CHOKIDAR_USEPOLLING=true
+      - APP_NAME=${APP_NAME}
+      - GOOGLECLIENTID=${GOOGLECLIENTID}
+      - WEBAPP_ID=${WEBAPP_ID}
+      - AUTH_TOKEN_AWARE_URL=${AUTH_TOKEN_AWARE_URL}
     networks:
       @PROJECT_NAME@:
         ipv4_address: 10.120.@S_NET@.5
+  # ┌──────────────────────────────────────────────────────────────┐
+  # │ Mailer service for testing purpose. Uncomment if needed.     │
+  # └──────────────────────────────────────────────────────────────┘
 #  mail:
 #    image: schickling/mailcatcher
 #    container_name: ${APP_NAME}-mail
@@ -92,9 +115,31 @@ services:
 #    environment:
 #      - VIRTUAL_HOST=${APP_NAME}-mail
 #      - VIRTUAL_PORT=1080
+  # ┌──────────────────────────────────────────────────────────────┐
+  # │ Schleupen MSSQL service uncomment if needed.                 │
+  # └──────────────────────────────────────────────────────────────┘
+#  schleupen:
+#    container_name: ${APP_NAME}-schleupen
+#    build:
+#      context: .docker/schleupen
+#    environment:
+#      - ACCEPT_EULA=Y
+#      - SA_PASSWORD=P4ssword
+#      - MSSQL_PID=Standard
+#    ports:
+#      - "1433:1433"
+#    volumes:
+#      - schleupen-db-data:/var/opt/mssql
+#      - .docker/schleupen/init:/schleupen-init
+#    networks:
+#      @PROJECT_NAME@:
+#         ipv4_address: 10.120.@S_NET@.7
+
+# Docker will create volume under /var/lib/docker/volumes
 volumes:
-  composer: { } # docker will create volume under /var/lib/docker/volumes
-  db-data: {} # docker will create volume under /var/lib/docker/volumes
+  composer: { }
+  db-data: {}
+#  schleupen-db-data: {}
 
 networks:
   @PROJECT_NAME@:
@@ -104,13 +149,11 @@ networks:
       config:
         - subnet: 10.120.@S_NET@.0/24
 
-# Entries should be placed in file /etc/hosts
-# please add to /etc/hosts file
+# Next lines please add to /etc/hosts file
 
 # 10.120.@S_NET@.2 @PROJECT_NAME@-app.com
-
 # 10.120.@S_NET@.4 @PROJECT_NAME@-db
-
 # 10.120.@S_NET@.5 @PROJECT_NAME@-web.com
 
 # 10.120.@S_NET@.6 @PROJECT_NAME@-mail
+# 10.120.@S_NET@.7 @PROJECT_NAME@-schleupen

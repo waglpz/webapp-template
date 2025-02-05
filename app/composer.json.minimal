@@ -7,6 +7,7 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "config": {
+    "process-timeout": 72000,
     "optimize-autoloader": true,
     "apcu-autoloader": true,
     "discard-changes": true,
@@ -18,21 +19,22 @@
     }
   },
   "require": {
-    "php": "^8.2",
+    "php": "^8.3",
     "ext-apcu": "*",
     "ext-fileinfo": "*",
     "ext-intl": "*",
     "ext-json": "*",
     "ext-mbstring": "*",
     "ext-mysqli": "*",
-    "ext-pcntl": "*",
     "ext-pdo": "*",
     "ext-pdo_mysql": "*",
     "waglpz/config": "^2.0",
     "waglpz/di-container": "^2.0"
   },
   "require-dev": {
+    "ext-pcntl": "*",
     "doctrine/coding-standard": "^11.1",
+    "nette/php-generator": "^4.1",
     "nunomaduro/mock-final-classes": "^1.2",
     "phpstan/extension-installer": "^1.1",
     "phpstan/phpstan": "^1.10",
@@ -58,6 +60,20 @@
     }
   },
   "replace": {
+  },
+    "scripts-descriptions": {
+    "waglpz:check:cli": "Runs the CLI command from application context.",
+    "waglpz:check:ci": "Runs the normal checks for Continuous Integration (CI).",
+    "waglpz:check:normal": "Performs normal checks, including code style check, analysis, and normal tests.",
+    "waglpz:code:analyse": "Analyzes the code using PHPStan with the specified configuration and levels.",
+    "waglpz:code:style:check": "Checks the code style using PHP CodeSniffer.",
+    "waglpz:code:style:fix": "Fixes coding style issues automatically using PHP Code Beautifier and Fixer.",
+    "waglpz:generate:password": "Generates a password using the specified script.",
+    "waglpz:test:normal": "Runs normal tests using PHPUnit with colors and no coverage report.",
+    "waglpz:generate:swagger": "Generates the OpenAPI specification in JSON format and saves it to src/swagger.json.",
+    "waglpz:test:coverage": "Runs tests with coverage report using PHPUnit in testdox format.",
+    "waglpz:test:ci": "Runs tests for CI without coverage, logging, or caching results.",
+    "waglpz:var:dump:server": "Starts the Var Dump Server for viewing the output of dump() calls in the application."
   },
   "scripts": {
     "waglpz:cli": "cli",
